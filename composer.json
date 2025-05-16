@@ -1,0 +1,17 @@
+{
+    "name": "tp/health-visit",
+    "description": "This is a hotel booking plugin",
+    "license": "GPL2",
+    "autoload": {
+        "psr-4": {
+            "Tp\\HealthVisit\\": "inc/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Themepure",
+            "email": "help@themepure.net"
+        }
+    ],
+    "require": {}
+}
