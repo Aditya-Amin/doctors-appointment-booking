@@ -38,3 +38,7 @@ if (file_exists(HEALTHVISIT_WP_DIR . 'vendor/autoload.php')) {
 // Load the main plugin class
 require_once HEALTHVISIT_WP_DIR . 'inc/plugin.php';
 
+
+// book appointment page
+// form
+// Data save korar jonno ekta post tyep lagbe

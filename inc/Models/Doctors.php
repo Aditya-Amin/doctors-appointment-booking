@@ -17,6 +17,7 @@ class Doctors
     public function __construct()
     {
         add_action( 'init', [$this, 'register_posttype'], 0 );
+        add_action( 'add_meta_boxes', [$this, 'register_meta_boxes'] );
     }
 
     /**
@@ -92,4 +93,90 @@ class Doctors
         );
         register_post_type( 'tp_doctors', $args );
     }
+
+    /**
+     * Add meta boxes for doctor details
+     */
+    public static function register_meta_boxes() {
+        add_meta_box('doctor_info', 'Doctor Info', [self::class, 'render'], 'tp_doctors', 'normal', 'default');
+    }
+
+    public static function render($post) {
+        wp_nonce_field('save_doctor_meta', 'doctor_meta_nonce');
+
+        // Get saved values
+        $socials = get_post_meta($post->ID, '_doctor_socials', true);
+        $socials = is_array($socials) ? $socials : [];
+
+        $availability = get_post_meta($post->ID, '_doctor_availability', true);
+        $availability = is_array($availability) ? $availability : [];
+
+        $phone = get_post_meta($post->ID, '_doctor_phone', true);
+        $email = get_post_meta($post->ID, '_doctor_email', true);
+        $price = get_post_meta($post->ID, '_doctor_price', true);
+
+        $designation = get_post_meta($post->ID, '_doctor_designation', true);
+
+        echo '<label>Designation / Specialty:</label>';
+        echo '<input type="text" name="doctor_designation" value="' . esc_attr($designation) . '" /><br>';
+
+
+        echo '<label>Phone: </label><input type="text" name="doctor_phone" value="' . esc_attr($phone) . '" /><br>';
+        echo '<label>Email: </label><input type="email" name="doctor_email" value="' . esc_attr($email) . '" /><br>';
+        echo '<label>Visiting Price: </label><input type="number" name="doctor_price" value="' . esc_attr($price) . '" /><br><br>';
+
+        echo '<h4>Social Media Links</h4>';
+        echo '<div id="social-repeater">';
+        foreach ($socials as $i => $row) {
+            echo '<div class="social-row">';
+            self::social_dropdown($row['platform'] ?? '', $row['url'] ?? '', $i);
+            echo '</div>';
+        }
+        echo '</div>';
+        echo '<button type="button" id="add-social">Add Social Link</button><br><br>';
+
+        echo '<h4>Weekly Availability</h4>';
+        echo '<div id="availability-container">';
+        foreach ($availability as $i => $slot) {
+            self::availability_row($slot['day'] ?? '', $slot['from'] ?? '', $slot['to'] ?? '', $i);
+        }
+        echo '</div>';
+        echo '<button type="button" id="add-availability">Add Availability</button>';
+    }
+
+    private static function social_dropdown($platform = '', $url = '', $index = 0) {
+        $platforms = ['fa-facebook-f', 'fa-linkedin-in', 'fa-instagram', 'fa-youtube'];
+        echo '<select name="doctor_socials[' . $index . '][platform]">';
+        foreach ($platforms as $p) {
+            $selected = $platform === $p ? 'selected' : '';
+            echo "<option value='$p' $selected>$p</option>";
+        }
+        echo '</select>';
+        echo '<input type="url" name="doctor_socials[' . $index . '][url]" value="' . esc_attr($url) . '" placeholder="https://..." />';
+        echo '<button type="button" class="remove-row">Remove</button>';
+    }
+
+    private static function availability_row($day = '', $from = '', $to = '', $index = 0) {
+        $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        echo '<div class="availability-row">';
+        echo '<label>Day:</label>';
+        echo '<select name="doctor_availability[' . $index . '][day]">';
+        foreach ($days as $d) {
+            $selected = $d === $day ? 'selected' : '';
+            echo "<option value='$d' $selected>$d</option>";
+        }
+        echo '</select>';
+
+        echo '<label>From:</label>';
+        echo '<input type="time" name="doctor_availability[' . $index . '][from]" value="' . esc_attr($from) . '" />';
+
+        echo '<label>To:</label>';
+        echo '<input type="time" name="doctor_availability[' . $index . '][to]" value="' . esc_attr($to) . '" />';
+
+        echo '<button type="button" class="remove-row">Remove</button>';
+        echo '</div>';
+    }
+
+
+
 }
